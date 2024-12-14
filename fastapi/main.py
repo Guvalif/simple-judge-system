@@ -20,6 +20,8 @@ async def judge(csv_file: UploadFile = File(...)):
         # バイナリデータを文字列に変換
         decoded_content = contents.decode("utf-8")
         submit = pd.read_csv(StringIO(decoded_content))
+        result = check_file_columns(submit)
+        print(result)
         return {"message": "File read successfully!", "columns": list(submit.columns)}
     except Exception as e:
         return {"error": "Failed to read CSV", "details": str(e)}
