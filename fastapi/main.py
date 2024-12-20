@@ -7,7 +7,8 @@ import csv
 
 app = FastAPI()
 
-ground_truth_data = {"index": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], "class": ["A", "B", "C", "A", "B", "C", "A", "B", "C", "A"]}  # 正解データ（例）
+#正解データ入力
+ground_truth_data = {"index": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], "class": ["A", "B", "C", "A", "B", "C", "A", "B", "C", "A"]}  # indexとクラス
 ground_truth_df = pd.DataFrame(ground_truth_data)
 
 @app.get("/")
@@ -33,9 +34,9 @@ async def judge(csv_file: UploadFile = File(...)):
         return {"message": "File read successfully!", "accuracy": accuracy}
 
     except HTTPException as e:
-        raise e
+        raise 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to process file: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"Error: ファイルの読み込みに失敗しました。詳細: {str(e)}")
 
 @app.exception_handler(404)
 async def not_found_exception(request: Request, exc: Exception):
