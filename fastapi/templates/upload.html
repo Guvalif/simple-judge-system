@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV Upload</title>
+</head>
+<body>
+    <h1>CSV アップロード</h1>
+    <form action="/judge" method="post" enctype="multipart/form-data">
+        <label for="csv_file">CSVファイルを選択してください:</label>
+        <input type="file" name="csv_file" id="csv_file" accept=".csv" required>
+        <button type="submit">送信</button>
+    </form>
+</body>
+</html>

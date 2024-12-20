@@ -1,19 +1,25 @@
 from fastapi import FastAPI, Request, Form, UploadFile, File, HTTPException
+from fastapi.responses import JSONResponse, HTMLResponse
 import pandas as pd
 from io import StringIO
 from fastapi.responses import JSONResponse
 from sklearn.metrics import accuracy_score
-import csv
+from fastapi.templating import Jinja2Templates
 
 app = FastAPI()
+
+#テンプレートエンジンの設定
+templates = Jinja2Templates(directory="templates")
 
 #正解データ入力
 ground_truth_data = {"index": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], "class": ["A", "B", "C", "A", "B", "C", "A", "B", "C", "A"]}  # indexとクラス
 ground_truth_df = pd.DataFrame(ground_truth_data)
 
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
+# Web UIエンドポイント
+@app.get("/", response_class=HTMLResponse)
+async def render_upload_page(request: Request):
+    return templates.TemplateResponse("upload.html", {"request": request})
+
 
 
 @app.post("/judge")
