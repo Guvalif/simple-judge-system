@@ -8,6 +8,9 @@ from fastapi.templating import Jinja2Templates
 
 app = FastAPI()
 
+# 許可するエンドポイントを明示的にリスト化
+ALLOWED_ENDPOINTS = ['/', '/judge']
+
 #テンプレートエンジンの設定
 templates = Jinja2Templates(directory="templates")
 
@@ -22,28 +25,44 @@ async def render_upload_page(request: Request):
 
 
 
-@app.post("/judge")
-async def judge(csv_file: UploadFile = File(...)):
+@app.post("/judge", response_class=HTMLResponse)
+async def judge(request: Request,csv_file: UploadFile = File(...)):
     try:
         # ファイルの内容を読み込む
         contents = await csv_file.read()
         decoded_content = contents.decode("utf-8")
         submit = pd.read_csv(StringIO(decoded_content))
 
-        # ファイルの形式を確認
-        validation_result = check_file_columns(submit)
-        if validation_result != "Success: ファイルの列は正しい形式です。":
-            raise HTTPException(status_code=400, detail=validation_result)
+         # ファイルの形式を確認
+        is_valid, validation_message = check_file_columns(submit)
 
+        if not is_valid:
+            # 不正な形式の場合、400エラーとエラーメッセージを返す
+            return templates.TemplateResponse(
+                "result.html", {"request": request, "accuracy": None, "error": validation_message},
+                status_code=400
+            )
+            
         # 正解率を計算
         accuracy = calculate_accuracy(submit, ground_truth_df)
-        return {"message": "File read successfully!", "accuracy": accuracy}
-
-    except HTTPException as e:
-        raise 
+         # 正常時のHTMLレンダリング
+        return templates.TemplateResponse(
+            "result.html", {"request": request, "accuracy": accuracy, "error": None}, status_code=200
+        )
+        
+    except ValueError as e:
+        # ここでcatchすることで、400エラーを返せるようにする
+        return templates.TemplateResponse(
+            "result.html", {"request": request, "accuracy": None, "error": f"Validation Error: {str(e)}"},
+            status_code=400
+        )
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Error: ファイルの読み込みに失敗しました。詳細: {str(e)}")
-
+        # その他の予期しないエラーは500エラーとして返す
+        return templates.TemplateResponse(
+            "result.html", {"request": request, "accuracy": None, "error": f"Unexpected error: {str(e)}"},
+            status_code=500
+        )
+        
 @app.exception_handler(404)
 async def not_found_exception(request: Request, exc: Exception):
     return JSONResponse(
@@ -52,26 +71,26 @@ async def not_found_exception(request: Request, exc: Exception):
     )
     
 
-import pandas as pd
-
 def check_file_columns(submit):
-    try:        
+    try:
         # 2列かどうか確認
         if submit.shape[1] != 2:
-            return "Error: ファイルは2列ではありません。"
+            return False, "Error: ファイルは2列ではありません。"
 
         # 列名が 'index' と 'class' であるかを確認
-        if not (submit.columns[0].lower() == 'index' and submit.columns[1].lower() == 'class'):
-            return "Error: 列名が 'index' または 'class' ではありません。"
+        if not (submit.columns[0].lower() == "index" and submit.columns[1].lower() == "class"):
+            return False, "Error: 列名が 'index' または 'class' ではありません。"
 
-        # 1列目がinteger、2列目がstringかどうか確認（データ部分）
+        # 1列目が整数、2列目が文字列かどうか確認（データ部分）
         if not all(isinstance(val, int) for val in submit.iloc[:, 0].dropna()):
-            return "Error: 1列目の値がすべて整数ではありません。"
+            return False, "Error: 1列目の値がすべて整数ではありません。"
 
-        return "Success: ファイルの列は正しい形式です。"
+        # 正常
+        return True, "Success: ファイルの列は正しい形式です。"
 
     except Exception as e:
-        return f"Error: ファイルの読み込みに失敗しました。詳細: {str(e)}"
+        # ファイル読み込みエラー
+        return False, f"Error: ファイルの読み込みに失敗しました。詳細: {str(e)}"
 
 # # テスト
 # file_path = "/content/drive/MyDrive/後期機械学習/random_class_data.csv"  # 確認したいファイルパスを指定
