@@ -11,6 +11,35 @@ app = FastAPI()
 # 許可するエンドポイントを明示的にリスト化
 ALLOWED_ENDPOINTS = ['/', '/judge']
 
+@app.middleware("http")
+async def check_endpoint(request: Request, call_next):
+    # ルートパスの取得
+    path = request.url.path
+    
+    # 許可されていないエンドポイントへのアクセスを遮断
+    if path not in ALLOWED_ENDPOINTS:
+        return HTMLResponse(
+            content=templates.TemplateResponse(
+                "error.html", 
+                {"request": request, "error": "404 Page not found"}
+            ).body,
+            status_code=404
+        )
+    
+    response = await call_next(request)
+    return response
+
+# 404ハンドラもHTMLレスポンスに統一
+@app.exception_handler(404)
+async def not_found_exception(request: Request, exc: Exception):
+    return HTMLResponse(
+        content=templates.TemplateResponse(
+            "error.html", 
+            {"request": request, "error": "404 Page not found"}
+        ).body,
+        status_code=404
+    )
+
 #テンプレートエンジンの設定
 templates = Jinja2Templates(directory="templates")
 
@@ -63,12 +92,12 @@ async def judge(request: Request,csv_file: UploadFile = File(...)):
             status_code=500
         )
         
-@app.exception_handler(404)
-async def not_found_exception(request: Request, exc: Exception):
-    return JSONResponse(
-        status_code=404,
-        content={"message": "Not Found"},
-    )
+# @app.exception_handler(404)
+# async def not_found_exception(request: Request, exc: Exception):
+#     return JSONResponse(
+#         status_code=404,
+#         content={"message": "Not Found"},
+#     )
     
 
 def check_file_columns(submit):
