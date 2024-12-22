@@ -11,6 +11,9 @@ app = FastAPI()
 # 許可するエンドポイントを明示的にリスト化
 ALLOWED_ENDPOINTS = ['/', '/judge']
 
+#テンプレートエンジンの設定
+templates = Jinja2Templates(directory="templates")
+
 @app.middleware("http")
 async def check_endpoint(request: Request, call_next):
     # ルートパスの取得
@@ -40,12 +43,11 @@ async def not_found_exception(request: Request, exc: Exception):
         status_code=404
     )
 
-#テンプレートエンジンの設定
-templates = Jinja2Templates(directory="templates")
 
 #正解データ入力
 ground_truth_data = {"index": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], "class": ["A", "B", "C", "A", "B", "C", "A", "B", "C", "A"]}  # indexとクラス
 ground_truth_df = pd.DataFrame(ground_truth_data)
+
 
 # Web UIエンドポイント
 @app.get("/", response_class=HTMLResponse)
