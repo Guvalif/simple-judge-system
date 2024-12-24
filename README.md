@@ -33,3 +33,5 @@
 
 - `docker build . -t guvalif/gdg`
 - `docker run --rm -p 8080:8080 guvalif/gdg`
+- `gcloud builds submit --tag asia.gcr.io/gacchi-do-getter/guvalif/gdg:latest --project=gacchi-do-getter`
+- `gcloud run deploy gacchi-do-getter --image asia.gcr.io/gacchi-do-getter/guvalif/gdg:latest --platform managed --region asia-northeast2 --allow-unauthenticated --project=gacchi-do-getter`
