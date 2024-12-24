@@ -1,19 +1,17 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Result</title>
-</head>
-<body>
-    <h1>結果</h1>
-    {% if accuracy is not none %}
-        <p>正解率: {{ accuracy | round(2) * 100 }}%</p>
-    {% endif %}
 
-    {% if error %}
-        <p style="color: red;">エラー: {{ error }}</p>
-    {% endif %}
-    <a href="/">戻る</a>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GACCHI-DO Getter | Result</title>
+</head>
+
+<body>
+  <h1>Result</h1>
+  <p>Accuracy: {{ accuracy | round(2) * 100 }}%</p>
+  <a href="/">Back to Home</a>
 </body>
+
 </html>
