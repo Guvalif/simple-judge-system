@@ -27,3 +27,9 @@
 
 - 管理者に相当するアクターは、事前に用意された `index` と `class` の組を、簡単に取り替えることができる
 - ユーザーは、Web UI を通じて、簡単に動作確認を行うことができる
+
+
+## Development Commands
+
+- `docker build . -t guvalif/gdg`
+- `docker run --rm -p 8080:8080 guvalif/gdg`

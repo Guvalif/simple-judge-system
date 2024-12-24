@@ -12,7 +12,7 @@ class ValidationError(Exception):
 
 
 def validate(df: DataFrame):
-    if df.columns != [ 'index', 'class' ]:
+    if df.columns.to_list() != [ 'index', 'class' ]:
         raise ValidationError("列名が 'index' および 'class' ではありません")
 
     if 'int' not in str(df.dtypes['index']):
